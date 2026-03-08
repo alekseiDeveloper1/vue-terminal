@@ -2,11 +2,11 @@ import { mount } from '@vue/test-utils'
 import { createTestingPinia } from '@pinia/testing'
 import { describe, it, expect, vi } from 'vitest'
 import App from './App.vue'
-import { nextTick } from "vue";
+import { nextTick } from 'vue'
 
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: vi.fn().mockImplementation(query => ({
+  value: vi.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -40,12 +40,12 @@ describe('App.vue', () => {
         plugins: [
           createTestingPinia({
             initialState: {
-              chart: { chartData: [] }
+              chart: { chartData: [] },
             },
             stubActions: false,
-          })
-        ]
-      }
+          }),
+        ],
+      },
     })
     await nextTick()
     await nextTick()
