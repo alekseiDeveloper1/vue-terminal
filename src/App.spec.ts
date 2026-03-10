@@ -18,20 +18,38 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 })
 
-vi.mock('lightweight-charts', () => ({
-  createChart: vi.fn(() => ({
-    addSeries: vi.fn(() => ({
-      setData: vi.fn(),
-      update: vi.fn(),
+const globalAny = globalThis as any;
+globalAny.ResizeObserver = class {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+};
+
+globalAny.Worker = class {
+  onmessage = vi.fn();
+  postMessage = vi.fn();
+  terminate = vi.fn();
+} as any;
+
+// 2. Мокаем библиотеку графиков с сохранением ColorType
+vi.mock('lightweight-charts', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('lightweight-charts')>();
+  return {
+    ...actual,
+    createChart: vi.fn(() => ({
+      addSeries: vi.fn(() => ({
+        setData: vi.fn(),
+        update: vi.fn(),
+      })),
+      remove: vi.fn(),
+      applyOptions: vi.fn(),
+      timeScale: vi.fn(() => ({
+        fitContent: vi.fn(),
+        scrollToRealTime: vi.fn(),
+      })),
     })),
-    applyOptions: vi.fn(),
-    remove: vi.fn(),
-    timeScale: vi.fn(() => ({
-      fitContent: vi.fn(),
-    })),
-  })),
-  LineSeries: {},
-}))
+  };
+});
 
 describe('App.vue', () => {
   it('renders a chart', async () => {
@@ -46,12 +64,13 @@ describe('App.vue', () => {
           }),
         ],
       },
-    })
-    await nextTick()
-    await nextTick()
+    });
 
-    const container = wrapper.find({ ref: 'chartContainer' })
+    await nextTick();
+    await nextTick();
 
-    expect(container.exists()).toBe(true)
-  })
-})
+    const container = wrapper.find('.chart-holder');
+
+    expect(container.exists()).toBe(true);
+  });
+});

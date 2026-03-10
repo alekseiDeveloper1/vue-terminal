@@ -1,84 +1,89 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, shallowRef, ref } from 'vue';
-import * as LightweightCharts from 'lightweight-charts';
-import { type IChartApi, LineSeries } from 'lightweight-charts';
+import { onMounted, onUnmounted, ref } from 'vue';
+import { createChart, ColorType, CandlestickSeries, type IChartApi, type ISeriesApi } from 'lightweight-charts';
 
-const orderBookData = shallowRef<any[]>([]);
 const chartContainer = ref<HTMLElement | null>(null);
 let chart: IChartApi | null = null;
+let series: ISeriesApi<"Candlestick"> | null = null;
 let worker: Worker | null = null;
 
 onMounted(() => {
+  if (!chartContainer.value) return;
+
+  chart = createChart(chartContainer.value, {
+    layout: {
+      textColor: 'black',
+      background: { type: ColorType.Solid, color: 'white' },
+    },
+    height: 400,
+    timeScale: {
+      timeVisible: true,
+      secondsVisible: true,
+    }
+  });
+
+  series = chart.addSeries(CandlestickSeries, {
+    upColor: '#26a69a',
+    downColor: '#ef5350',
+    borderVisible: false,
+    wickUpColor: '#26a69a',
+    wickDownColor: '#ef5350',
+  });
+
   worker = new Worker(new URL('../workers/socket.worker.ts', import.meta.url), {
-    type: 'module',
+    type: 'module'
   });
 
   worker.onmessage = (event) => {
-    orderBookData.value = [...orderBookData.value, ...event.data];
-    if (orderBookData.value.length > 1000) {
-      orderBookData.value = orderBookData.value.slice(-1000);
+    const candleData = event.data;
+    if (series) {
+      series.update(candleData);
     }
   };
 
-  if (chartContainer.value) {
-    chart = LightweightCharts.createChart(chartContainer.value, {
-      width: chartContainer.value.clientWidth,
-      height: 300,
-      layout: {
-        background: { color: '#f0f0f0' },
-        textColor: '#333',
-      },
-      grid: {
-        vertLines: {
-          color: '#e0e0e0',
-        },
-        horzLines: {
-          color: '#e0e0e0',
-        },
-      },
-    });
-    
-    const lineSeries = chart.addSeries(LineSeries);
-    lineSeries.setData([
-        { time: '2019-04-11', value: 80.01 },
-        { time: '2019-04-12', value: 96.63 },
-        { time: '2019-04-13', value: 76.64 },
-    ]);
-  }
+  const resizeObserver = new ResizeObserver(entries => {
+    if (chart && entries[0]?.contentRect) {
+      chart.applyOptions({ width: entries[0]?.contentRect.width });
+    }
+  });
+  resizeObserver.observe(chartContainer.value);
 });
 
+const scrollToRealTime = () => {
+  chart?.timeScale().scrollToRealTime();
+};
+
 onUnmounted(() => {
-  if (worker) {
-    worker.terminate();
-  }
-  if (chart) {
-    chart.remove();
-  }
+  worker?.terminate();
+  chart?.remove();
 });
 </script>
 
 <template>
-  <div>
-    <h2>Order Book (Real-Time via WebWorker)</h2>
-    <div ref="chartContainer" class="chart-container"></div>
-    <pre class="data-dump">{{ orderBookData.length }} updates received</pre>
+  <div class="wrapper">
+    <div class="buttons-container">
+      <button @click="scrollToRealTime">Go to realtime</button>
+    </div>
+    <div ref="chartContainer" class="chart-holder"></div>
   </div>
 </template>
 
 <style scoped>
-.chart-container {
-  width: 100%;
-  height: 300px;
-  border: 1px solid #ccc;
+.wrapper { font-family: sans-serif; }
+.chart-holder { width: 100%; height: 400px; margin-top: 10px; }
+
+.buttons-container {
+  display: flex;
+  gap: 8px;
 }
-.data-dump {
-  margin-top: 1rem;
-  background-color: #282c34;
-  color: #abb2bf;
-  padding: 1rem;
-  max-height: 200px;
-  overflow-y: auto;
-  font-size: 0.8em;
-  border-radius: 4px;
+.buttons-container button {
+  font-size: 16px;
+  padding: 8px 24px;
+  color: #131722;
+  background-color: #f0f3fa;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
 }
+.buttons-container button:hover { background-color: #e0e3eb; }
 </style>

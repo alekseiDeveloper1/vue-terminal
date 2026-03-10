@@ -1,44 +1,26 @@
-interface DepthUpdate {
-  e: string;
-  E: number;
-  s: string;
-  U: number;
-  u: number;
-  b: [string, string][];
-  a: [string, string][];
-}
-
-let socket: WebSocket;
-let dataBuffer: DepthUpdate[] = [];
-
 const connect = () => {
-  socket = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@depth');
-
-  socket.onopen = () => {
-    console.log('[Worker] WebSocket connection established');
-  };
+  const socket = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@kline_1m');
 
   socket.onmessage = (event) => {
-    const message: DepthUpdate = JSON.parse(event.data);
-    dataBuffer.push(message);
+    const msg = JSON.parse(event.data);
+    console.log(event.data)
+    if (msg.e === 'kline' && msg.k) {
+      const { t, o, h, l, c } = msg.k;
+
+      const candle = {
+        time: t / 1000,
+        open: parseFloat(o),
+        high: parseFloat(h),
+        low: parseFloat(l),
+        close: parseFloat(c),
+      };
+
+      postMessage(candle);
+    }
   };
 
-  socket.onclose = () => {
-    console.log('[Worker] WebSocket connection closed. Reconnecting...');
-    setTimeout(connect, 1000);
-  };
-
-  socket.onerror = (error) => {
-    console.error('[Worker] WebSocket error:', error);
-    socket.close();
-  };
+  socket.onclose = () => setTimeout(connect, 2000);
+  socket.onerror = (err) => console.error('Worker Socket Error:', err);
 };
 
 connect();
-
-setInterval(() => {
-  if (dataBuffer.length > 0) {
-    postMessage(dataBuffer);
-    dataBuffer = [];
-  }
-}, 100);
