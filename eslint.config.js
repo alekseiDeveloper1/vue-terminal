@@ -1,14 +1,13 @@
-
-import globals from "globals";
-import tseslint from "typescript-eslint";
-import pluginVue from "eslint-plugin-vue";
+import globals from 'globals'
+import tseslint from 'typescript-eslint'
+import pluginVue from 'eslint-plugin-vue'
 
 export default [
   {
-    ignores: ["dist/**", "node_modules/**"],
+    ignores: ['dist/**', 'node_modules/**'],
   },
   ...tseslint.configs.recommended,
-  ...pluginVue.configs["flat/recommended"],
+  ...pluginVue.configs['flat/recommended'],
   {
     languageOptions: {
       globals: {
@@ -20,7 +19,7 @@ export default [
       },
     },
     rules: {
-        "vue/multi-word-component-names": "off"
-    }
+      'vue/multi-word-component-names': 'off',
+    },
   },
-];
+]

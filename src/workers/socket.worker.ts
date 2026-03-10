@@ -1,11 +1,13 @@
 const connect = () => {
-  const socket = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@kline_1m');
+  const socket = new WebSocket(
+    'wss://stream.binance.com:9443/ws/btcusdt@kline_1m',
+  )
 
   socket.onmessage = (event) => {
-    const msg = JSON.parse(event.data);
+    const msg = JSON.parse(event.data)
     console.log(event.data)
     if (msg.e === 'kline' && msg.k) {
-      const { t, o, h, l, c } = msg.k;
+      const { t, o, h, l, c } = msg.k
 
       const candle = {
         time: t / 1000,
@@ -13,14 +15,14 @@ const connect = () => {
         high: parseFloat(h),
         low: parseFloat(l),
         close: parseFloat(c),
-      };
+      }
 
-      postMessage(candle);
+      postMessage(candle)
     }
-  };
+  }
 
-  socket.onclose = () => setTimeout(connect, 2000);
-  socket.onerror = (err) => console.error('Worker Socket Error:', err);
-};
+  socket.onclose = () => setTimeout(connect, 2000)
+  socket.onerror = (err) => console.error('Worker Socket Error:', err)
+}
 
-connect();
+connect()

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import OrderBook from './components/OrderBook.vue';
+import OrderBook from './components/OrderBook.vue'
 </script>
 
 <template>
@@ -10,7 +10,9 @@ import OrderBook from './components/OrderBook.vue';
 
 <style scoped>
 main {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+    sans-serif;
   padding: 2rem;
 }
 </style>
