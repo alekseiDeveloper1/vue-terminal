@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import OrderBook from './components/OrderBook.vue'
+import Trade from './components/Trade.vue'
 </script>
 
 <template>
   <main>
     <OrderBook />
+    <Trade />
   </main>
 </template>
 

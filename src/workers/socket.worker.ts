@@ -1,6 +1,6 @@
 const connect = () => {
   const socket = new WebSocket(
-    'wss://stream.binance.com:9443/ws/btcusdt@kline_1m',
+    'wss://stream.testnet.binance.vision/ws/btcusdt@kline_1m',
   )
 
   socket.onmessage = (event) => {

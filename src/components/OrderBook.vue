@@ -68,9 +68,14 @@ onUnmounted(() => {
 <template>
   <div class="wrapper">
     <div class="buttons-container">
-      <button @click="scrollToRealTime">Go to realtime</button>
+      <button @click="scrollToRealTime">
+        Go to realtime
+      </button>
     </div>
-    <div ref="chartContainer" class="chart-holder" />
+    <div
+      ref="chartContainer"
+      class="chart-holder"
+    />
   </div>
 </template>
 
